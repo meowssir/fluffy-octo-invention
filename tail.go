@@ -63,7 +63,8 @@ func (c *Client) writePump(s *Server) {
 	for {
 		select {
 		case msg := <-c.send:
-			// NOTE: added a the key, value pair to the header of the form: Mongo:[true] to identify who the receiver should be.
+			// NOTE: added a the key, value pair to the header of the form: 
+			// Mongo:[true] to identify who the receiver should be.
 			// i.e. the downstream driver client should always send.
 			_ = "breakpoint"
 			for c := range s.clients {
