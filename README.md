@@ -1,2 +1,2 @@
 # fluffy-octo-invention
-Asynchronous oplog tailing using the WebSocket Protocol in Go
+Asynchronous oplog tailing using the WebSocket Protocol
