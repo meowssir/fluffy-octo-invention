@@ -66,6 +66,7 @@ func tailOplog() {
 			fmt.Println(result.O)
 			lastId = result.O
 			// TODO: connect and send an ObjectId. GetBSON() to unmarshal and decode to bytes.
+			// FIXME: this should write not Dial every time we send an oplog entry.
 			websocketDial(lastId)
 		}
 		if iter.Err() != nil {
