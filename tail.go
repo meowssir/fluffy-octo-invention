@@ -68,6 +68,7 @@ func (c *Client) writePump(s *Server) {
 			// i.e. the downstream driver client should always send.
 			_ = "breakpoint"
 			for c := range s.clients {
+				// INFO: this operation is not expensive: O(n) where n is c.conn.
 				if c.conn.Request().Header.Get("Mongo") != "true" {
 					c.conn.Write(msg)
 				}
