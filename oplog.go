@@ -1,4 +1,4 @@
-package oplog
+package main
 
 import (
 	"fmt"
@@ -11,8 +11,9 @@ import (
 )
 
 const (
-	origin := "http://localhost/"
-	server := "ws://localhost:12345/ws"
+	server = "ws://localhost:12345/ws"
+	origin = "http://localhost/"
+	url    = "[mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]"
 )
 
 type Result struct {
@@ -30,31 +31,28 @@ type OplogEntry struct {
 	O  Result
 }
 
-// FIXME: unmarshal getter/setter.
-func websocketDial(o Result) {
+func websocketDial() *websocket.Conn {
 	config, err := websocket.NewConfig(server, origin)
 	if err != nil {
 		log.Fatal(err)
 	}
-	// TODO: Evaluate handshake latency overhead with the additional 9 bytes of header data.
+	// NOTE: Handshake latency overhead with the additional 9 bytes of header data is negligible.
 	config.Header.Add("Mongo", "true")
 	ws, err := websocket.DialConfig(config)
 	if err != nil {
 		log.Fatal(err)
 	}
-	ws.Write([]byte(o))
-	if err != nil {
-		log.Fatal(err)
-	}
+	return ws
 }
 
-func tailOplog() {
-	_ = "breakpoint"
+func main() {
 	session, err := mgo.Dial(url)
 	if err != nil {
 		panic(err)
 	}
 	defer session.Close()
+
+	ws := websocketDial()
 
 	result := OplogEntry{}
 	lastId := Result{}
@@ -65,12 +63,14 @@ func tailOplog() {
 		for iter.Next(&result) {
 			fmt.Println(result.O)
 			lastId = result.O
-			// TODO: connect and send an ObjectId. GetBSON() to unmarshal and decode to bytes.
-			// FIXME: this should write not Dial every time we send an oplog entry.
-			websocketDial(lastId)
+			out, err := bson.Marshal(lastId)
+			if err != nil {
+				log.Printf("error: %v", err)
+			}
+			ws.Write(out)
 		}
 		if iter.Err() != nil {
-			fmt.Println("an error happened")
+			log.Println("error: %v", iter.Err())
 		}
 		if iter.Timeout() {
 			continue
