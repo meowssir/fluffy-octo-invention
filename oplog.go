@@ -13,7 +13,7 @@ import (
 const (
 	server = "ws://localhost:12345/ws"
 	origin = "http://localhost/"
-	url    = "[mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]"
+	url    = "Byrons-MacBook-Pro-3.local:27017,Byrons-MacBook-Pro-3.local:27018"
 )
 
 type Result struct {
@@ -46,6 +46,7 @@ func websocketDial() *websocket.Conn {
 }
 
 func main() {
+	_ = "breakpoint"
 	session, err := mgo.Dial(url)
 	if err != nil {
 		panic(err)
@@ -63,11 +64,11 @@ func main() {
 		for iter.Next(&result) {
 			fmt.Println(result.O)
 			lastId = result.O
-			out, err := bson.Marshal(lastId)
+			a, err := lastId.Id.MarshalText()
 			if err != nil {
-				log.Printf("error: %v", err)
+				log.Fatal(err)
 			}
-			ws.Write(out)
+			ws.Write(a)
 		}
 		if iter.Err() != nil {
 			log.Println("error: %v", iter.Err())

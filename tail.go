@@ -63,12 +63,14 @@ func (c *Client) writePump(s *Server) {
 	for {
 		select {
 		case msg := <-c.send:
-			// NOTE: added a the key, value pair to the header of the form: 
+			// NOTE: added a the key, value pair to the header of the form:
 			// Mongo:[true] to identify who the receiver should be.
 			// i.e. the downstream driver client should always send.
 			_ = "breakpoint"
 			for c := range s.clients {
 				// INFO: this operation is not expensive: O(n) where n is c.conn.
+				// FIXME: each iteration of s.clients map will send n frames where n is the len of map.
+				// FIXME: add some logic to handle not repeatedly send dupe frames.
 				if c.conn.Request().Header.Get("Mongo") != "true" {
 					c.conn.Write(msg)
 				}
