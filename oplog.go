@@ -53,11 +53,13 @@ func main() {
 	}
 	defer session.Close()
 
+	var (
+		result = OplogEntry{}
+		lastId = Result{}
+	)
+
 	ws := websocketDial()
-
-	result := OplogEntry{}
-	lastId := Result{}
-
+	
 	collection := session.DB("local").C("oplog.rs")
 	iter := collection.Find(bson.M{"ns": "test.foo"}).Sort("$natural").Tail(5 * time.Second)
 	for {
